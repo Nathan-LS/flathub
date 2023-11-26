@@ -1,0 +1,36 @@
+app-id: io.github.mgoeppner.EVEMon
+runtime: org.freedesktop.Platform
+runtime-version: '23.08'
+sdk-extensions:
+  - org.freedesktop.Sdk.Extension.mono6
+sdk: org.freedesktop.Sdk
+command: EVEMon
+finish-args:
+  - --socket=x11
+  - --share=ipc
+  - --share=network
+separate-locales: false
+modules:
+  - name: mono
+    buildsystem: simple
+    build-commands:
+      - /usr/lib/sdk/mono6/install.sh
+  - name: EVEMon
+    buildsystem: simple
+    build-commands:
+      - /usr/lib/sdk/mono6/use.sh
+      - printenv | grep -i 'LD_LIBRARY_PATH'
+#      - ldd /usr/lib/sdk/mono6/lib/libgdiplus.so
+      - /usr/lib/sdk/mono6/bin/msbuild -r EVEMon.sln -target:Build
+    sources:
+      - type: git
+        url: https://github.com/mgoeppner/evemon.git
+        branch: linux-fixes
+        commit: 6530fe820ca4ac99d377f0d3035737f50f470501
+  - name: flatpakAssets
+    buildsystem: simple
+    build-commands:
+      - install -D EVEMon ${FLATPAK_DEST}/bin/EVEMon
+    sources:
+      - type: file
+        path: EVEMon
